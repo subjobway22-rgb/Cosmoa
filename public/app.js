@@ -42,10 +42,6 @@ const dday = (e) => {
 };
 const officialHref = (e) => e.officialUrl || 'https://www.google.com/search?q=' + encodeURIComponent(e.name + ' 공식');
 
-function infoList(e) {
-  const rows = [['📅 날짜', fmtDate(e)], ['⏰ 시간', e.time || '공식 사이트 확인'], ['💰 요금', e.fee || '공식 사이트 확인'], ['📍 위치', e.location || '공식 사이트 확인']];
-  return h('dl', { class: 'info' }, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
-}
 function extraLinks(e) {
   return (e.links || []).filter(l => /^https?:\/\//.test(l.url)).map(l => h('a', { class: 'btn ghost', href: l.url, target: '_blank', rel: 'noopener noreferrer', onclick: (ev) => ev.stopPropagation() }, l.label + ' ↗'));
 }
@@ -85,19 +81,36 @@ function openSuggest(ev) {
 $('#suggest-new').onclick = () => openSuggest(null);
 $('#s-close').onclick = () => $('#sdlg').close();
 
+const WD = ['일', '월', '화', '수', '목', '금', '토'];
+function dateBlock(e) {
+  const [y, m, d] = e.startDate.split('-').map(Number);
+  const multi = e.endDate && e.endDate !== e.startDate;
+  const wd = WD[new Date(y, m - 1, d).getDay()];
+  const end = multi ? ' ~ ' + Number(e.endDate.split('-')[2]) + '일' : '';
+  return h('div', { class: 'date' }, h('small', {}, `${y}.${String(m).padStart(2, '0')}`), h('b', {}, String(d)), h('em', {}, wd + end));
+}
+function infoList(e, compact) {
+  const rows = [['📅', fmtDate(e)], ['⏰', e.time], ['💰', e.fee], ['📍', e.location]].slice(compact ? 1 : 0);
+  return h('dl', { class: 'info' }, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', v ? {} : { class: 'na' }, v || '공식 사이트 확인')]));
+}
 function render() {
   const q = $('#q').value.trim().toLowerCase(), region = $('#region').value, period = $('#period').value, t = today();
   const list = state.events.filter(e =>
     (!q || (e.name + ' ' + e.location).toLowerCase().includes(q)) &&
     (!region || e.region === region) &&
     (period === 'all' || (period === 'upcoming' ? e.endDate >= t : e.endDate < t)));
+  if (period === 'past') list.reverse();
   const box = $('#list'); box.replaceChildren();
   $('#empty').hidden = list.length > 0;
+  $('#count').textContent = list.length ? `행사 ${list.length}개` : '';
   for (const e of list) {
-    box.append(h('article', { class: 'card', tabindex: 0, onclick: () => openEvent(e.id), onkeydown: (k) => k.key === 'Enter' && openEvent(e.id) },
-      h('div', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플')] : null, originBadge(e)),
-      h('h3', {}, e.name), infoList(e),
-      h('div', { class: 'counts' }, state.roles.map(r => h('span', {}, `${r} ${e.counts[r] || 0}`)), h('span', {}, `💬 ${e.commentCount}`)),
+    const dd = dday(e), cls = dd === '종료' ? 'end' : dd === '진행중' ? 'live' : 'dday';
+    box.append(h('article', { class: 'card' + (dd === '종료' ? ' past' : ''), tabindex: 0, onclick: () => openEvent(e.id), onkeydown: (k) => k.key === 'Enter' && openEvent(e.id) },
+      h('div', { class: 'head' }, dateBlock(e), h('div', {},
+        h('div', { class: 'tags' }, h('span', { class: 'tag ' + cls }, dd), h('span', { class: 'tag' }, e.category || '기타'), e.sample ? h('span', { class: 'tag sample' }, '샘플') : null, originBadge(e)),
+        h('h3', {}, e.name))),
+      infoList(e, true),
+      h('div', { class: 'counts' }, state.roles.map(r => h('span', { class: e.counts[r] ? 'has' : '' }, `${r} ${e.counts[r] || 0}`)), h('span', {}, `💬 ${e.commentCount}`)),
       h('div', { class: 'actions' }, officialBtn(e), extraLinks(e), h('button', { class: 'btn', onclick: (ev) => { ev.stopPropagation(); openEvent(e.id); } }, '참가 체크 · 문의'))));
   }
 }
@@ -203,5 +216,11 @@ async function renderDetail(e) {
 
 $('#d-close').onclick = () => $('#dlg').close();
 $('#dlg').addEventListener('click', (ev) => { if (ev.target === $('#dlg')) $('#dlg').close(); });
-['q', 'region', 'period'].forEach(id => $('#' + id).addEventListener('input', render));
+['q', 'region'].forEach(id => $('#' + id).addEventListener('input', render));
+$('#period-seg').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return;
+  $('#period').value = b.dataset.v;
+  document.querySelectorAll('#period-seg button').forEach(x => x.classList.toggle('on', x === b));
+  render();
+});
 load();

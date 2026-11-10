@@ -4,27 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>코스모아 - 코스프레·서브컬처 행사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <header class="top">
   <div class="wrap">
-    <h1>✦ 코스모아 <small>COSMOA</small></h1>
+    <h1 class="brand"><b>✦ 코스모아</b><i>COSMOA</i></h1>
     <p class="sub">코스프레·서브컬처 행사를 한눈에, 같이 갈 사람을 찾아보세요</p>
-    <div class="filters">
-      <input id="q" type="search" placeholder="행사명·장소 검색">
-      <select id="region"><option value="">전체 지역</option></select>
-      <select id="period">
-        <option value="upcoming">다가오는 행사</option>
-        <option value="all">전체</option>
-        <option value="past">지난 행사</option>
-      </select>
+    <div class="hero-actions">
+      <button id="suggest-new" class="btn hero">＋ 행사 제보하기</button>
+      <p id="meta" class="meta"></p>
     </div>
-    <p id="meta" class="meta"></p>
-    <button id="suggest-new" class="btn ghost" style="margin-top:8px">＋ 행사 제보하기</button>
   </div>
 </header>
-<main class="wrap"><div id="list" class="grid"></div><p id="empty" class="empty" hidden>조건에 맞는 행사가 없어요.</p></main>
+<main class="wrap">
+  <div class="bar">
+    <input id="q" type="search" placeholder="🔍 행사명·장소 검색" aria-label="검색">
+    <select id="region" aria-label="지역"><option value="">전체 지역</option></select>
+    <div class="seg" id="period-seg" role="tablist">
+      <button data-v="upcoming" class="on">다가오는</button><button data-v="all">전체</button><button data-v="past">지난</button>
+    </div>
+    <input id="period" type="hidden" value="upcoming">
+  </div>
+  <p id="count" class="count"></p>
+  <div id="list" class="grid"></div><p id="empty" class="empty" hidden>조건에 맞는 행사가 없어요.</p>
+</main>
 
 <dialog id="dlg">
   <div class="dlg-head"><h2 id="d-title"></h2><button id="d-close" class="x" aria-label="닫기">✕</button></div>
