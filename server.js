@@ -36,7 +36,8 @@ const server = http.createServer(async (req, res) => {
       const r = await app.handle({ method: req.method, path: url.pathname, headers: req.headers, ip: req.socket.remoteAddress, bodyText: await readBody(req) });
       return out(res, r.status, r.body);
     }
-    const f = path.normalize(path.join(PUB, url.pathname === '/' ? 'index.html' : url.pathname));
+    let f = path.normalize(path.join(PUB, url.pathname === '/' ? 'index.html' : url.pathname));
+    if (!path.extname(f) && fs.existsSync(f + '.html')) f += '.html'; // Cloudflare처럼 .html 생략 허용
     if (!f.startsWith(PUB + path.sep)) return out(res, 403, 'forbidden', 'text/plain');
     fs.readFile(f, (err, buf) => {
       if (err) return out(res, 404, 'not found', 'text/plain');

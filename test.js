@@ -45,5 +45,22 @@ const T = 'a'.repeat(32), T2 = 'b'.repeat(32);
   [, list] = await j('GET', '/api/events');
   assert.ok(list.events.find(e => e.name === '신규콘' && e.origin === 'user' && e.locked));
   assert.equal(list.events.find(e => e.id === id).time, '10:00 ~ 17:00');
+  // 욕설·링크 차단
+  const cm = async (text, nick = 'n') => post('/api/comments', { token: T, eventId: id, nickname: nick, text });
+  for (const bad of ['씨발 뭐야', '시 발', 'https://evil.example/x', 'naver . com 와봐', 'open.kakao.com/o/abc']) { [s] = await cm(bad); assert.equal(s, 400, bad); }
+  [s] = await cm('등신대 포토존 있나요? 11/14에 촬영 문의드려요'); assert.equal(s, 200);
+  [s] = await cm('정상 내용', '씨발'); assert.equal(s, 400);
+  [s] = await post('/api/participate', { token: T2, eventId: id, role: '코스어', nickname: 'ok', memo: 'bit.ly/x' }); assert.equal(s, 400);
+  [s] = await post('/api/participate', { token: T2, eventId: id, role: '코스어', nickname: 'ok', snsPlatform: 'X', sns: '@ok_cos', memo: '원신 클레 코스' }); assert.equal(s, 200);
+  // 관리자 댓글/참가자 조회·선택 삭제
+  assert.equal((await fetch(base + '/api/admin/comments')).status, 403);
+  [s] = await post('/api/admin/comments/delete', { ids: ['x'] }); assert.equal(s, 403);
+  let adm = await (await fetch(base + '/api/admin/comments', { headers: A })).json();
+  assert.ok(adm.items.length >= 1 && !('owner' in adm.items[0]) && adm.items[0].eventName);
+  [s, d] = await post('/api/admin/comments/delete', { ids: adm.items.map(x => x.id) }, A); assert.equal(s, 200); assert.equal(d.deleted, adm.items.length);
+  adm = await (await fetch(base + '/api/admin/comments', { headers: A })).json(); assert.equal(adm.items.length, 0);
+  const pa = await (await fetch(base + '/api/admin/participants', { headers: A })).json(); assert.ok(pa.items.length >= 1);
+  [s] = await post('/api/admin/participants/delete', { ids: pa.items.map(x => x.id) }, A); assert.equal(s, 200);
+  [s] = await post('/api/admin/comments/delete', {}, A); assert.equal(s, 400);
   console.log('ALL OK'); server.close();
 })().catch(e => { console.error(e); process.exit(1); });
