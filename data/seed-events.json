@@ -33,5 +33,20 @@
         "url": "https://www.agfkorea.com/ticket"
       }
     ]
+  },
+  {
+    "id": "cosncomic-96",
+    "name": "코스앤코믹 96회",
+    "category": "코스프레",
+    "startDate": "2026-11-28",
+    "endDate": "2026-11-29",
+    "time": "",
+    "fee": "",
+    "location": "서울랜드 (경기 과천)",
+    "region": "경기",
+    "officialUrl": "",
+    "links": [],
+    "description": "나무위키 등 검색 결과 기준 정보로, 단일 출처라 확인이 필요합니다. 시간·요금은 공식 공지를 확인하세요.",
+    "source": "검색 결과(미확인)"
   }
 ]
