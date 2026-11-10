@@ -33,10 +33,14 @@ npm test
 - 관리자는 `ADMIN_TOKEN=비밀값 npm start` 후 `/admin.html`에서 토큰을 입력해 승인/거절합니다. 승인된 항목은 `origin: "user"`, `locked: true`가 되어 자동 수집이 덮어쓰지 않으며 "이용자 제보 · 확인됨" 배지가 붙습니다.
 - `ADMIN_TOKEN`을 설정하지 않으면 관리자 기능은 모두 잠깁니다(제보는 쌓이지만 승인할 수 없음).
 
-## 배포 (무료)
-Render 무료 웹서비스 + Upstash Redis 무료 DB 조합입니다. 무료 서비스는 디스크가 재시작 시 초기화되므로, 환경변수 `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`이 있으면 참가·댓글·제안·수집 결과를 Redis에 함께 저장하고 시작 시 복원합니다. (없으면 로컬 파일만 사용)
-1. [Upstash](https://upstash.com)에서 Redis DB를 무료로 만들고 REST URL/TOKEN을 복사
-2. Render → New → Blueprint → 이 저장소 선택, 위 두 값 입력, 배포
-3. Environment의 `ADMIN_TOKEN`으로 `/admin.html`에서 제보 승인
-4. 무료 서비스는 15분 무접속 시 잠들고 깨울 때 수집을 확인합니다. [cron-job.org](https://cron-job.org) 등 무료 cron으로 하루 1~2회 사이트 주소를 호출하면 일일 수집이 안정적으로 돕니다.
-- 인스턴스는 1개만 사용하세요(동시 다중 인스턴스는 지원하지 않음).
+## 배포 (완전 무료, 카드 불필요)
+Hugging Face Spaces(Docker) + Upstash Redis. 무료 Space는 디스크가 재시작 시 초기화되므로 `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`이 있으면 상태를 Redis에도 저장하고 시작 시 복원합니다.
+1. [Upstash](https://upstash.com)에서 Redis DB 생성(무료) → REST URL/TOKEN 복사
+2. [Hugging Face](https://huggingface.co)에서 New Space → SDK: **Docker**, 공개(Public) 선택, 이름 예: `cosmoa`
+3. Space → Settings → Variables and secrets에 `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `ADMIN_TOKEN`(직접 정한 긴 비밀값)을 **Secret**으로 추가
+4. 코드 올리기 — 아래 중 하나
+   - 자동: HF 프로필 → Access Tokens에서 Write 토큰 발급 → GitHub 저장소 Settings → Secrets에 `HF_TOKEN`, Variables에 `HF_SPACE`(`사용자명/cosmoa`) 추가. 이후 `main`에 머지/푸시할 때마다 자동 배포(`.github/workflows/deploy-hf.yml`)
+   - 수동: Space 저장소에 이 프로젝트를 푸시하고 `deploy/huggingface/README.md`를 루트 `README.md`로 사용
+5. 접속 주소는 `https://사용자명-cosmoa.hf.space`. GitHub Variables에 `SITE_URL`로 넣으면 매일 깨워 일일 수집이 돕니다(`daily-ping.yml`).
+6. `/admin.html`에서 `ADMIN_TOKEN`으로 제보 승인
+- Space 하나(인스턴스 1개)만 사용하세요. 장기간 무접속이면 잠들 수 있고 접속하면 깨어납니다.
