@@ -1,0 +1,23 @@
+{
+  "_comment": "하루 한 번 수집할 출처. type=jsonld: 해당 URL 페이지의 schema.org Event(JSON-LD)를 읽어 행사를 추가/갱신합니다. 출처를 자유롭게 추가하세요.",
+  "sources": [
+    {
+      "name": "코믹월드",
+      "type": "jsonld",
+      "url": "https://www.comicw.co.kr",
+      "category": "동인행사"
+    },
+    {
+      "name": "지스타",
+      "type": "jsonld",
+      "url": "https://www.gstar.or.kr",
+      "category": "게임/서브컬처"
+    },
+    {
+      "name": "일러스타 페스",
+      "type": "jsonld",
+      "url": "https://illustar.net",
+      "category": "서브컬처"
+    }
+  ]
+}

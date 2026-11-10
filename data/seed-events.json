@@ -1,0 +1,67 @@
+[
+  {
+    "id": "nekobimu-2026",
+    "name": "2026 네코비무 고양 서브컬처 페스티벌",
+    "category": "서브컬처",
+    "startDate": "2026-11-14",
+    "endDate": "2026-11-14",
+    "time": "11:00 ~ 21:00 (우천 시 11/15 순연)",
+    "fee": "무료",
+    "location": "경기 고양시 일산 라페스타 야외 보행거리 일대",
+    "region": "경기",
+    "officialUrl": "https://x.com/nekobimu_fes",
+    "links": [],
+    "description": "청년작가 60여 팀, 전문 코스어 NPC 스탬프 랠리, 애니송 버스킹, 코스프레 커버댄스, 나이트 DJ. 우천·강풍 시 15일(일) 순연 여부는 전날 18시 공식 X(@nekobimu_fes)에 공지됩니다. 고양신문 보도 기준 정보입니다.",
+    "source": "고양신문 보도"
+  },
+  {
+    "id": "gstar-2026",
+    "name": "지스타 2026 (G-STAR)",
+    "category": "게임/서브컬처",
+    "startDate": "2026-11-19",
+    "endDate": "2026-11-22",
+    "time": "",
+    "fee": "",
+    "location": "부산 해운대구 벡스코(BEXCO) 제1·2전시장",
+    "region": "부산",
+    "officialUrl": "https://www.gstar.or.kr",
+    "description": "뉴스 보도 기준 정보입니다. 운영시간·입장권 가격은 공식 사이트에서 확인하세요.",
+    "source": "뉴스 보도(2026-10)",
+    "links": []
+  },
+  {
+    "id": "agf-2026",
+    "name": "AGF 2026 (애니메이션 게임 페스티벌)",
+    "category": "서브컬처",
+    "startDate": "2026-12-04",
+    "endDate": "2026-12-06",
+    "time": "",
+    "fee": "얼리버드 1일권 24,000원 / 패스트 티켓 50,000원 (보도 기준)",
+    "location": "경기 고양시 일산 킨텍스 제1전시장 1~5홀",
+    "region": "경기",
+    "officialUrl": "https://www.agfkorea.com",
+    "description": "뉴스 보도 기준 정보입니다. 운영시간·최신 티켓 가격은 멜론티켓/공식 공지에서 확인하세요.",
+    "source": "뉴스 보도(2026-09~10)",
+    "links": [
+      {
+        "label": "티켓 안내",
+        "url": "https://www.agfkorea.com/ticket"
+      }
+    ]
+  },
+  {
+    "id": "cosncomic-96",
+    "name": "코스앤코믹 96회",
+    "category": "코스프레",
+    "startDate": "2026-11-28",
+    "endDate": "2026-11-29",
+    "time": "",
+    "fee": "",
+    "location": "서울랜드 (경기 과천)",
+    "region": "경기",
+    "officialUrl": "",
+    "links": [],
+    "description": "나무위키 등 검색 결과 기준 정보로, 단일 출처라 확인이 필요합니다. 시간·요금은 공식 공지를 확인하세요.",
+    "source": "검색 결과(미확인)"
+  }
+]

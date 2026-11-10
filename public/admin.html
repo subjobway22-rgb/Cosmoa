@@ -1,0 +1,77 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코스모아 관리자</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><meta name="robots" content="noindex,nofollow">
+<style>
+body{padding-bottom:60px}.adm{max-width:920px;margin:0 auto;padding:24px 16px}
+.adm h1{font-size:24px;color:var(--navy);margin-bottom:14px}
+.login{display:flex;gap:8px;margin-bottom:16px}.login input{flex:1}
+.tabs2{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs2 button{border:0;border-radius:99px;padding:8px 18px;background:var(--chip);color:var(--chipink);font-weight:700;cursor:pointer}
+.tabs2 button.on{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+.tools input[type=search]{flex:1;min-width:160px}.tools label{display:flex;gap:6px;align-items:center;font-weight:600;white-space:nowrap}.tools input[type=checkbox]{width:auto}
+.item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.item input[type=checkbox]{width:18px;height:18px;margin-top:4px;flex:none}
+.item .b{flex:1;min-width:0}.item .txt{white-space:pre-wrap;word-break:break-word;margin:4px 0}
+.item.sel{border-color:var(--pri);background:var(--card2)}
+.msg{color:var(--mute);padding:20px 0}
+</style></head>
+<body><main class="adm"><h1>✦ 코스모아 관리자</h1>
+<form class="login" id="login"><input id="tk" type="password" placeholder="관리자 토큰" autocomplete="current-password"><button class="btn">불러오기</button></form>
+<div class="tabs2" id="tabs"><button data-t="suggestions" class="on">제안 승인</button><button data-t="comments">댓글</button><button data-t="participants">참가자</button></div>
+<div id="tools" class="tools" hidden>
+  <label><input type="checkbox" id="all"> 전체 선택</label>
+  <input type="search" id="flt" placeholder="내용·닉네임·행사 검색">
+  <button class="btn danger" id="del" disabled>선택 삭제</button>
+</div>
+<div id="out"></div></main>
+<script>
+const $=s=>document.querySelector(s);
+function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(x,v===true?'':v)}for(const c of k.flat())if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c));return e}
+let tab='suggestions',rows=[],sel=new Set();
+try{$('#tk').value=sessionStorage.getItem('cosmoa.adm')||''}catch{}
+const H=()=>({'x-admin-token':$('#tk').value,'content-type':'application/json'});
+const when=d=>new Date(d).toLocaleString('ko-KR');
+async function load(){
+  const out=$('#out');out.replaceChildren(h('p',{class:'msg'},'불러오는 중…'));sel=new Set();upd();
+  let r,j;try{r=await fetch('/api/admin/'+tab,{headers:H()});j=await r.json()}catch{out.replaceChildren(h('p',{class:'msg'},'네트워크 오류'));return}
+  if(!r.ok){out.replaceChildren(h('p',{class:'msg'},r.status===403?'토큰이 올바르지 않아요.':(j.error||'오류')));$('#tools').hidden=true;return}
+  try{sessionStorage.setItem('cosmoa.adm',$('#tk').value)}catch{}
+  rows=j.suggestions||j.items||[];draw();
+}
+function draw(){
+  const out=$('#out'),q=$('#flt').value.trim().toLowerCase();
+  $('#tools').hidden=tab==='suggestions';
+  const list=tab==='suggestions'?rows:rows.filter(x=>!q||JSON.stringify([x.nickname,x.text,x.memo,x.sns,x.eventName]).toLowerCase().includes(q));
+  out.replaceChildren();
+  if(!list.length){out.append(h('p',{class:'msg'},tab==='suggestions'?'대기 중인 제안이 없어요.':'항목이 없어요.'));upd();return}
+  for(const s of list){
+    if(tab==='suggestions'){
+      const act=async w=>{const r=await fetch(`/api/admin/suggestions/${s.id}/${w}`,{method:'POST',headers:H(),body:'{}'});const j=await r.json();if(!r.ok)alert(j.error);load()};
+      const safe=/^https?:\/\//.test(s.sourceUrl);
+      out.append(h('section',{style:'margin-bottom:10px'},h('b',{},s.type==='new'?'신규 행사':'수정: '+(s.eventName||s.eventId)),' ',h('span',{class:'mute'},`${s.nickname||'익명'} · ${when(s.createdAt)}`),
+        h('ul',{},Object.entries(s.fields).map(([k,v])=>h('li',{},k+': '+v))),
+        h('div',{},'출처: ',safe?h('a',{href:s.sourceUrl,target:'_blank',rel:'noopener noreferrer nofollow'},s.sourceUrl):s.sourceUrl),
+        s.note?h('div',{class:'mute'},s.note):null,
+        h('div',{class:'actions',style:'margin-top:8px'},h('button',{class:'btn',onclick:()=>act('approve')},'승인'),h('button',{class:'btn danger',onclick:()=>act('reject')},'거절'))));
+    }else{
+      const cb=h('input',{type:'checkbox',checked:sel.has(s.id),onchange:e=>{e.target.checked?sel.add(s.id):sel.delete(s.id);item.classList.toggle('sel',e.target.checked);upd()}});
+      const item=h('label',{class:'item'+(sel.has(s.id)?' sel':'')},cb,h('div',{class:'b'},
+        h('div',{},h('b',{},s.nickname),' ',s.role?h('span',{class:'tag'},s.role):null,' ',s.inquiry?h('span',{class:'tag dday'},'문의·촬영'):null,' ',h('span',{class:'mute'},`${s.eventName} · ${when(s.createdAt)}`)),
+        tab==='comments'?h('div',{class:'txt'},s.text):h('div',{class:'txt'},[s.snsPlatform&&s.sns?`${s.snsPlatform} ${s.sns}`:'',s.memo?` · ${s.memo}`:''].join('')||'(소개 없음)')));
+      out.append(item);
+    }
+  }
+  upd();
+}
+function upd(){const n=sel.size;$('#del').disabled=!n;$('#del').textContent=n?`선택 삭제 (${n})`:'선택 삭제';
+  const vis=[...document.querySelectorAll('.item input')];$('#all').checked=vis.length>0&&vis.every(c=>c.checked)}
+$('#all').onchange=e=>{document.querySelectorAll('.item').forEach(it=>{const c=it.querySelector('input');c.checked=e.target.checked;c.dispatchEvent(new Event('change'))})};
+$('#del').onclick=async()=>{
+  if(!sel.size||!confirm(`${sel.size}개를 삭제할까요? 되돌릴 수 없어요.`))return;
+  const r=await fetch(`/api/admin/${tab}/delete`,{method:'POST',headers:H(),body:JSON.stringify({ids:[...sel]})});const j=await r.json();
+  if(!r.ok)return alert(j.error||'삭제 실패');load();
+};
+$('#flt').oninput=draw;
+$('#login').onsubmit=e=>{e.preventDefault();load()};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#flt').value='';if($('#tk').value)load()};
+if($('#tk').value)load();
+</script></body></html>

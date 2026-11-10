@@ -1,0 +1,7 @@
+node_modules
+data/suggestions.json
+data/participants.json
+data/comments.json
+data/meta.json
+data/events.json
+*.tmp
