@@ -33,8 +33,10 @@ npm test
 - 관리자는 `ADMIN_TOKEN=비밀값 npm start` 후 `/admin.html`에서 토큰을 입력해 승인/거절합니다. 승인된 항목은 `origin: "user"`, `locked: true`가 되어 자동 수집이 덮어쓰지 않으며 "이용자 제보 · 확인됨" 배지가 붙습니다.
 - `ADMIN_TOKEN`을 설정하지 않으면 관리자 기능은 모두 잠깁니다(제보는 쌓이지만 승인할 수 없음).
 
-## 배포
-`Dockerfile`과 `render.yaml`이 포함돼 있습니다. 상태 데이터(참가·댓글·제안·수집 결과)는 `DATA_DIR`(영구 디스크)에 저장됩니다.
-1. Render 대시보드 → New → Blueprint → 이 저장소 선택 → 배포
-2. 생성된 서비스의 Environment에서 `ADMIN_TOKEN` 값을 확인해 `/admin.html`에서 사용
-3. 다른 호스트(Fly.io, Railway 등)는 Dockerfile 그대로, 영구 볼륨을 `/var/data`에 마운트하고 `ADMIN_TOKEN`을 설정하세요.
+## 배포 (무료)
+Render 무료 웹서비스 + Upstash Redis 무료 DB 조합입니다. 무료 서비스는 디스크가 재시작 시 초기화되므로, 환경변수 `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`이 있으면 참가·댓글·제안·수집 결과를 Redis에 함께 저장하고 시작 시 복원합니다. (없으면 로컬 파일만 사용)
+1. [Upstash](https://upstash.com)에서 Redis DB를 무료로 만들고 REST URL/TOKEN을 복사
+2. Render → New → Blueprint → 이 저장소 선택, 위 두 값 입력, 배포
+3. Environment의 `ADMIN_TOKEN`으로 `/admin.html`에서 제보 승인
+4. 무료 서비스는 15분 무접속 시 잠들고 깨울 때 수집을 확인합니다. [cron-job.org](https://cron-job.org) 등 무료 cron으로 하루 1~2회 사이트 주소를 호출하면 일일 수집이 안정적으로 돕니다.
+- 인스턴스는 1개만 사용하세요(동시 다중 인스턴스는 지원하지 않음).

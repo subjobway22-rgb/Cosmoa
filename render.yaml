@@ -1,16 +1,16 @@
-# Render Blueprint: 저장소를 연결하면 이 파일로 서비스를 자동 생성합니다.
+# Render Blueprint (무료 플랜). 디스크가 없으므로 상태는 Upstash Redis(무료)에 백업됩니다.
 services:
   - type: web
     name: cosmoa
     runtime: docker
-    plan: starter          # 영구 디스크는 유료 플랜 필요
+    plan: free
     healthCheckPath: /
     envVars:
       - key: ADMIN_TOKEN
-        generateValue: true  # 대시보드 Environment에서 확인
+        generateValue: true
       - key: DATA_DIR
-        value: /var/data
-    disk:
-      name: cosmoa-data
-      mountPath: /var/data
-      sizeGB: 1
+        value: /tmp/cosmoa
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false

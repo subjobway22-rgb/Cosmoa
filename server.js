@@ -224,8 +224,10 @@ async function maybeRefresh() {
 }
 
 if (require.main === module) {
-  server.listen(PORT, () => console.log(`코스모아 http://localhost:${PORT}`));
-  maybeRefresh();
-  setInterval(maybeRefresh, 3600 * 1000).unref();
+  store.init().then(() => {
+    server.listen(PORT, () => console.log(`코스모아 http://localhost:${PORT}` + (store.REMOTE ? ' (Redis 백업 사용)' : '')));
+    maybeRefresh();
+    setInterval(maybeRefresh, 3600 * 1000).unref();
+  });
 }
 module.exports = server;
