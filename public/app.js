@@ -53,6 +53,38 @@ function officialBtn(e, cls = 'btn ghost') {
   return h('a', { class: cls, href: officialHref(e), target: '_blank', rel: 'noopener noreferrer', onclick: (ev) => ev.stopPropagation() }, e.officialUrl ? '공식 정보 보기 ↗' : '공식 정보 검색 ↗');
 }
 
+function originBadge(e) {
+  return e.origin ? [' ', h('span', { class: 'tag', title: '이용자가 제보하고 관리자가 출처를 확인한 정보입니다' }, '이용자 제보 · 확인됨')] : null;
+}
+
+const FIELD_DEFS = [['name', '행사명', '예: 2026 ○○ 페스티벌'], ['startDate', '시작일', 'YYYY-MM-DD'], ['endDate', '종료일', 'YYYY-MM-DD (하루면 비워두세요)'], ['time', '시간', '예: 11:00 ~ 21:00'], ['fee', '요금', '예: 무료 / 1일권 24,000원'], ['location', '장소', '예: 일산 킨텍스 제1전시장'], ['region', '지역', '예: 서울, 경기, 부산'], ['officialUrl', '공식 사이트/SNS 링크', 'https://']];
+function openSuggest(ev) {
+  const isEdit = !!ev;
+  $('#s-title').textContent = isEdit ? `정보 수정 제안 · ${ev.name}` : '새 행사 제보';
+  const inputs = {};
+  const rows = FIELD_DEFS.filter(([k]) => !(isEdit && k === 'name')).map(([k, label, ph]) => {
+    inputs[k] = h('input', { placeholder: ph, maxlength: 160, type: (k === 'startDate' || k === 'endDate') ? 'date' : 'text', value: isEdit ? (ev[k] || '') : '' });
+    return h('label', { class: 'fld' }, h('span', { class: 'mute' }, label + (!isEdit && (k === 'name' || k === 'startDate') ? ' *' : '')), inputs[k]);
+  });
+  const src = h('input', { placeholder: '근거 링크 (공식 공지·SNS 게시글) *', maxlength: 200 });
+  const note = h('textarea', { rows: 2, maxlength: 300, placeholder: '관리자에게 전할 메모 (선택)' });
+  const nick = h('input', { placeholder: '닉네임 (선택)', maxlength: 20, value: profile().nickname });
+  $('#s-body').replaceChildren(
+    h('p', { class: 'mute' }, '제보한 내용은 바로 공개되지 않고, 관리자가 출처를 확인한 뒤 반영됩니다. ' + (isEdit ? '바꿀 항목만 고쳐주세요.' : '')),
+    ...rows, src, note, nick,
+    h('button', { class: 'btn', onclick: async (e2) => {
+      const fields = {}; for (const [k, i] of Object.entries(inputs)) if (i.value.trim() && (!isEdit || i.value.trim() !== (ev[k] || ''))) fields[k] = i.value.trim();
+      e2.target.disabled = true;
+      try {
+        await call('POST', 'suggestions', { type: isEdit ? 'edit' : 'new', eventId: isEdit ? ev.id : undefined, fields, sourceUrl: src.value, note: note.value, nickname: nick.value });
+        toast('제보 완료! 관리자 확인 후 반영돼요'); $('#sdlg').close();
+      } catch (er) { toast(er.message); e2.target.disabled = false; }
+    } }, '제출'));
+  $('#sdlg').showModal();
+}
+$('#suggest-new').onclick = () => openSuggest(null);
+$('#s-close').onclick = () => $('#sdlg').close();
+
 function render() {
   const q = $('#q').value.trim().toLowerCase(), region = $('#region').value, period = $('#period').value, t = today();
   const list = state.events.filter(e =>
@@ -63,7 +95,7 @@ function render() {
   $('#empty').hidden = list.length > 0;
   for (const e of list) {
     box.append(h('article', { class: 'card', tabindex: 0, onclick: () => openEvent(e.id), onkeydown: (k) => k.key === 'Enter' && openEvent(e.id) },
-      h('div', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플')] : null),
+      h('div', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플')] : null, originBadge(e)),
       h('h3', {}, e.name), infoList(e),
       h('div', { class: 'counts' }, state.roles.map(r => h('span', {}, `${r} ${e.counts[r] || 0}`)), h('span', {}, `💬 ${e.commentCount}`)),
       h('div', { class: 'actions' }, officialBtn(e), extraLinks(e), h('button', { class: 'btn', onclick: (ev) => { ev.stopPropagation(); openEvent(e.id); } }, '참가 체크 · 문의'))));
@@ -159,10 +191,11 @@ async function renderDetail(e) {
     } }, '댓글 등록'));
 
   body.replaceChildren(
-    h('section', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플 데이터')] : null,
+    h('section', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플 데이터')] : null, originBadge(e),
       h('div', { style: 'height:8px' }), infoList(e),
       e.description ? h('p', { class: 'mute' }, e.description) : null,
-      h('div', { class: 'actions' }, officialBtn(e, 'btn'), extraLinks(e))),
+      h('div', { class: 'actions' }, officialBtn(e, 'btn'), extraLinks(e), h('button', { class: 'btn ghost', onclick: () => openSuggest(e) }, '✏️ 정보 수정 제안')),
+      e.sourceUrl ? h('p', { class: 'mute' }, '제보 출처: ', h('a', { href: e.sourceUrl, target: '_blank', rel: 'noopener noreferrer nofollow' }, e.sourceUrl)) : null),
     form,
     h('section', {}, h('h4', {}, `👥 참가자 (${data.participants.length})`), tabs, plist),
     h('section', {}, h('h4', {}, `💬 문의 · 촬영약속 (${data.comments.length})`), clist, h('div', { style: 'height:10px' }), cform));

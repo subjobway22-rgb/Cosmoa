@@ -1,0 +1,19 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>코스모아 관리자</title><link rel="stylesheet" href="/style.css"><meta name="robots" content="noindex"></head>
+<body><main class="wrap" style="padding-top:20px"><h1>제안 승인</h1>
+<div class="row"><input id="tk" type="password" placeholder="관리자 토큰"><button class="btn" id="go">불러오기</button></div>
+<div id="out" style="display:flex;flex-direction:column;gap:12px;margin-top:14px"></div></main>
+<script>
+const $=s=>document.querySelector(s);
+function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x==='class')e.className=v;else if(x.startsWith('on'))e.addEventListener(x.slice(2),v);else e.setAttribute(x,v)}for(const c of k.flat())if(c!=null)e.append(c.nodeType?c:document.createTextNode(c));return e}
+const H=()=>({'x-admin-token':$('#tk').value,'content-type':'application/json'});
+async function load(){const r=await fetch('/api/admin/suggestions',{headers:H()});const j=await r.json();const o=$('#out');o.replaceChildren();
+if(!r.ok)return o.append(j.error||'오류');if(!j.suggestions.length)o.append('대기 중인 제안이 없어요.');
+for(const s of j.suggestions){const act=async(w)=>{const r=await fetch(`/api/admin/suggestions/${s.id}/${w}`,{method:'POST',headers:H(),body:'{}'});const j=await r.json();if(!r.ok)alert(j.error);load()};
+const safe=/^https?:\/\//.test(s.sourceUrl);
+o.append(h('section',{},h('b',{},s.type==='new'?'신규 행사':'수정: '+(s.eventName||s.eventId)),' ',h('span',{class:'mute'},`${s.nickname||'익명'} · ${new Date(s.createdAt).toLocaleString('ko-KR')}`),
+h('ul',{},Object.entries(s.fields).map(([k,v])=>h('li',{},k+': '+v))),
+h('div',{},'출처: ',safe?h('a',{href:s.sourceUrl,target:'_blank',rel:'noopener noreferrer nofollow'},s.sourceUrl):s.sourceUrl),
+s.note?h('div',{class:'mute'},s.note):null,
+h('div',{class:'actions',style:'margin-top:8px'},h('button',{class:'btn',onclick:()=>act('approve')},'승인'),h('button',{class:'btn danger',onclick:()=>act('reject')},'거절'))))}}
+$('#go').onclick=load;
+</script></body></html>

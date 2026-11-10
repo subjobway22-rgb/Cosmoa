@@ -37,6 +37,21 @@ function snsLink(platform, handle) {
   return { X: `https://x.com/${h}`, 인스타그램: `https://instagram.com/${h}`, 트위터: `https://x.com/${h}` }[platform] || '';
 }
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const FIELDS = { name: 120, category: 20, startDate: 10, endDate: 10, time: 60, fee: 80, location: 160, region: 10 };
+function isAdmin(req) { return !!ADMIN_TOKEN && req.headers['x-admin-token'] === ADMIN_TOKEN; }
+// 제안 필드 정리·검증. 오류 시 문자열 반환
+function cleanFields(f, isNew) {
+  f = f || {}; const out = {};
+  for (const [k, n] of Object.entries(FIELDS)) { const v = clean(f[k], n); if (v) out[k] = v; }
+  if (f.officialUrl) { const u = safeUrl(f.officialUrl); if (!u) return '공식 링크는 http(s):// 주소여야 합니다'; out.officialUrl = u; }
+  for (const k of ['startDate', 'endDate']) if (out[k] && (!DATE_RE.test(out[k]) || isNaN(Date.parse(out[k])))) return '날짜는 YYYY-MM-DD 형식이어야 합니다';
+  if (isNew && (!out.name || !out.startDate)) return '행사명과 시작일은 필수입니다';
+  if (isNew && !out.endDate) out.endDate = out.startDate;
+  if (out.startDate && out.endDate && out.endDate < out.startDate) return '종료일이 시작일보다 빠릅니다';
+  return out;
+}
+
 function send(res, code, body, type = 'application/json; charset=utf-8') {
   res.writeHead(code, { 'content-type': type, 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' });
   res.end(typeof body === 'string' ? body : JSON.stringify(body));
@@ -79,8 +94,36 @@ async function api(req, res, url) {
   }
 
   if (m === 'POST' && parts[0] === 'admin' && parts[1] === 'refresh') {
-    if (!ADMIN_TOKEN || req.headers['x-admin-token'] !== ADMIN_TOKEN) return send(res, 403, { error: 'forbidden' });
+    if (!isAdmin(req)) return send(res, 403, { error: 'forbidden' });
     return send(res, 200, await scraper.run());
+  }
+
+  if (parts[0] === 'admin' && parts[1] === 'suggestions') {
+    if (m === 'POST') await readBody(req).catch(() => ({}));
+    if (!isAdmin(req)) return send(res, 403, { error: 'forbidden' });
+    const all = store.read('suggestions.json', []);
+    if (m === 'GET') return send(res, 200, { suggestions: all.filter(x => x.status === 'pending').map(x => ({ ...x, owner: undefined, ip: undefined, eventName: (getEvents().find(e => e.id === x.eventId) || {}).name })) });
+    if (m === 'POST' && parts[2] && ['approve', 'reject'].includes(parts[3])) {
+      const sg = all.find(x => x.id === parts[2] && x.status === 'pending');
+      if (!sg) return send(res, 404, { error: '대기 중인 제안이 아닙니다' });
+      if (parts[3] === 'approve') {
+        const events = getEvents();
+        if (sg.type === 'new') {
+          const id = 'user-' + crypto.createHash('sha1').update(sg.fields.name + sg.fields.startDate).digest('hex').slice(0, 10);
+          if (events.some(e => e.id === id)) return send(res, 409, { error: '이미 같은 행사가 있습니다' });
+          events.push({ links: [], description: '', ...sg.fields, id, origin: 'user', locked: true, sourceUrl: sg.sourceUrl, source: '이용자 제보' });
+        } else {
+          const ev = events.find(e => e.id === sg.eventId);
+          if (!ev) return send(res, 404, { error: '행사를 찾을 수 없습니다' });
+          Object.assign(ev, sg.fields, { locked: true, sample: false, origin: ev.origin || 'user-edited', updatedAt: new Date().toISOString() });
+        }
+        store.write('events.json', events);
+      }
+      sg.status = parts[3] === 'approve' ? 'approved' : 'rejected'; sg.decidedAt = new Date().toISOString();
+      store.write('suggestions.json', all);
+      return send(res, 200, { ok: true });
+    }
+    return send(res, 404, { error: 'not found' });
   }
 
   if (!['POST', 'DELETE'].includes(m)) return send(res, 404, { error: 'not found' });
@@ -88,6 +131,25 @@ async function api(req, res, url) {
   const body = await readBody(req);
   const token = clean(body.token, 80);
   if (token.length < 16) return send(res, 400, { error: '잘못된 요청입니다' });
+
+  // 행사 제안 (신규/수정): 즉시 공개하지 않고 관리자 승인 대기
+  if (m === 'POST' && parts[0] === 'suggestions') {
+    const type = body.type === 'edit' ? 'edit' : 'new';
+    const eventId = clean(body.eventId, 80);
+    if (type === 'edit' && !getEvents().some(e => e.id === eventId)) return send(res, 404, { error: '행사를 찾을 수 없습니다' });
+    const fields = cleanFields(body.fields, type === 'new');
+    if (typeof fields === 'string') return send(res, 400, { error: fields });
+    if (type === 'edit' && !Object.keys(fields).length) return send(res, 400, { error: '수정할 내용을 입력해주세요' });
+    const sourceUrl = safeUrl(body.sourceUrl);
+    if (!sourceUrl) return send(res, 400, { error: '근거가 되는 출처 링크(공식 공지·SNS)를 입력해주세요' });
+    const all = store.read('suggestions.json', []);
+    const o = hash(token), dayAgo = Date.now() - DAY;
+    if (all.filter(x => (x.owner === o || x.ip === ip) && Date.parse(x.createdAt) > dayAgo).length >= 5) return send(res, 429, { error: '제안은 하루 5건까지 가능합니다' });
+    if (all.filter(x => x.status === 'pending').length >= 300) return send(res, 503, { error: '대기 중인 제안이 많습니다. 잠시 후 다시 시도해주세요' });
+    all.push({ id: crypto.randomUUID(), type, eventId: type === 'edit' ? eventId : '', fields, sourceUrl, note: clean(body.note, 300), nickname: clean(body.nickname, 20), status: 'pending', createdAt: new Date().toISOString(), owner: o, ip });
+    store.write('suggestions.json', all);
+    return send(res, 200, { ok: true });
+  }
 
   // 참가 체크 (행사+브라우저당 1건, 재전송 시 수정)
   if (m === 'POST' && parts[0] === 'participate') {

@@ -48,3 +48,4 @@ section h4{margin:0 0 10px;font-size:15px}
 .tabs button.on{background:var(--pri);color:#fff}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;font-size:14px}.chk input{width:auto}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#231f3a;color:#fff;padding:10px 18px;border-radius:99px;z-index:99}
+.fld{display:block;margin-bottom:8px}.fld input{margin-top:2px}#s-body{padding:16px 18px 24px;display:flex;flex-direction:column;gap:8px}
