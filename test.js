@@ -1,6 +1,7 @@
 'use strict';
 const assert = require('assert');
 process.env.ADMIN_TOKEN = 'adm';
+process.env.DATA_DIR = require('fs').mkdtempSync(require('os').tmpdir() + '/cosmoa-');
 const server = require('./server');
 const { jsonLdEvents, normalize } = require('./lib/scraper');
 const T = 'a'.repeat(32), T2 = 'b'.repeat(32);
