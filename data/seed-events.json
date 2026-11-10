@@ -11,7 +11,8 @@
     "region": "부산",
     "officialUrl": "https://www.gstar.or.kr",
     "description": "뉴스 보도 기준 정보입니다. 운영시간·입장권 가격은 공식 사이트에서 확인하세요.",
-    "source": "뉴스 보도(2026-10)"
+    "source": "뉴스 보도(2026-10)",
+    "links": []
   },
   {
     "id": "agf-2026",
@@ -23,8 +24,14 @@
     "fee": "얼리버드 1일권 24,000원 / 패스트 티켓 50,000원 (보도 기준)",
     "location": "경기 고양시 일산 킨텍스 제1전시장 1~5홀",
     "region": "경기",
-    "officialUrl": "",
+    "officialUrl": "https://www.agfkorea.com",
     "description": "뉴스 보도 기준 정보입니다. 운영시간·최신 티켓 가격은 멜론티켓/공식 공지에서 확인하세요.",
-    "source": "뉴스 보도(2026-09~10)"
+    "source": "뉴스 보도(2026-09~10)",
+    "links": [
+      {
+        "label": "티켓 안내",
+        "url": "https://www.agfkorea.com/ticket"
+      }
+    ]
   }
 ]

@@ -46,6 +46,9 @@ function infoList(e) {
   const rows = [['📅 날짜', fmtDate(e)], ['⏰ 시간', e.time || '공식 사이트 확인'], ['💰 요금', e.fee || '공식 사이트 확인'], ['📍 위치', e.location || '공식 사이트 확인']];
   return h('dl', { class: 'info' }, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
 }
+function extraLinks(e) {
+  return (e.links || []).filter(l => /^https?:\/\//.test(l.url)).map(l => h('a', { class: 'btn ghost', href: l.url, target: '_blank', rel: 'noopener noreferrer', onclick: (ev) => ev.stopPropagation() }, l.label + ' ↗'));
+}
 function officialBtn(e, cls = 'btn ghost') {
   return h('a', { class: cls, href: officialHref(e), target: '_blank', rel: 'noopener noreferrer', onclick: (ev) => ev.stopPropagation() }, e.officialUrl ? '공식 정보 보기 ↗' : '공식 정보 검색 ↗');
 }
@@ -63,7 +66,7 @@ function render() {
       h('div', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플')] : null),
       h('h3', {}, e.name), infoList(e),
       h('div', { class: 'counts' }, state.roles.map(r => h('span', {}, `${r} ${e.counts[r] || 0}`)), h('span', {}, `💬 ${e.commentCount}`)),
-      h('div', { class: 'actions' }, officialBtn(e), h('button', { class: 'btn', onclick: (ev) => { ev.stopPropagation(); openEvent(e.id); } }, '참가 체크 · 문의'))));
+      h('div', { class: 'actions' }, officialBtn(e), extraLinks(e), h('button', { class: 'btn', onclick: (ev) => { ev.stopPropagation(); openEvent(e.id); } }, '참가 체크 · 문의'))));
   }
 }
 
@@ -159,7 +162,7 @@ async function renderDetail(e) {
     h('section', {}, h('span', { class: 'tag dday' }, dday(e)), ' ', h('span', { class: 'tag' }, e.category || '기타'), e.sample ? [' ', h('span', { class: 'tag sample' }, '샘플 데이터')] : null,
       h('div', { style: 'height:8px' }), infoList(e),
       e.description ? h('p', { class: 'mute' }, e.description) : null,
-      h('div', { class: 'actions' }, officialBtn(e, 'btn'))),
+      h('div', { class: 'actions' }, officialBtn(e, 'btn'), extraLinks(e))),
     form,
     h('section', {}, h('h4', {}, `👥 참가자 (${data.participants.length})`), tabs, plist),
     h('section', {}, h('h4', {}, `💬 문의 · 촬영약속 (${data.comments.length})`), clist, h('div', { style: 'height:10px' }), cform));
