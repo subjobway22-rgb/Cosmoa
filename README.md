@@ -32,3 +32,9 @@ npm test
 - 출처 링크(공식 공지·SNS)가 필수이며, 링크는 http(s)만, 날짜는 YYYY-MM-DD만 허용합니다. 브라우저/IP당 하루 5건, 대기 300건 상한.
 - 관리자는 `ADMIN_TOKEN=비밀값 npm start` 후 `/admin.html`에서 토큰을 입력해 승인/거절합니다. 승인된 항목은 `origin: "user"`, `locked: true`가 되어 자동 수집이 덮어쓰지 않으며 "이용자 제보 · 확인됨" 배지가 붙습니다.
 - `ADMIN_TOKEN`을 설정하지 않으면 관리자 기능은 모두 잠깁니다(제보는 쌓이지만 승인할 수 없음).
+
+## 배포
+`Dockerfile`과 `render.yaml`이 포함돼 있습니다. 상태 데이터(참가·댓글·제안·수집 결과)는 `DATA_DIR`(영구 디스크)에 저장됩니다.
+1. Render 대시보드 → New → Blueprint → 이 저장소 선택 → 배포
+2. 생성된 서비스의 Environment에서 `ADMIN_TOKEN` 값을 확인해 `/admin.html`에서 사용
+3. 다른 호스트(Fly.io, Railway 등)는 Dockerfile 그대로, 영구 볼륨을 `/var/data`에 마운트하고 `ADMIN_TOKEN`을 설정하세요.
