@@ -4,32 +4,75 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>코스모아 - 코스프레·서브컬처 행사</title>
+<meta name="description" content="코스프레와 서브컬처의 모든 것! 가장 가까운 행사를 찾고, 같이 갈 사람을 만나보세요.">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <h1 class="brand"><b>✦ 코스모아</b><i>COSMOA</i></h1>
-    <p class="sub">코스프레·서브컬처 행사를 한눈에, 같이 갈 사람을 찾아보세요</p>
-    <div class="hero-actions">
-      <button id="suggest-new" class="btn hero">＋ 행사 제보하기</button>
-      <p id="meta" class="meta"></p>
+<nav class="nav">
+  <div class="nav-in">
+    <a class="logo" href="#top" aria-label="코스모아 홈"><span class="logo-star">✦</span><b>Cosmoa</b><small>코스모아</small></a>
+    <div class="nav-links">
+      <a href="#top" class="on">홈</a><a href="#events">행사 찾기</a><a href="#" id="nav-suggest">행사 제보</a>
     </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-sky" aria-hidden="true"></div>
+  <img class="hero-char" src="/img/hero.webp" alt="코스모아 마스코트 코스모" width="597" height="1020" fetchpriority="high">
+  <div class="hero-text">
+    <p class="hero-kicker">코스프레와 서브컬처의 모든 것!</p>
+    <h1 class="hero-title">코스모아</h1>
+    <p class="hero-sub">지금, 가장 가까운 서브컬처 행사를 만나보세요!</p>
+    <form class="hero-search" id="hero-search" role="search">
+      <span aria-hidden="true">🔍</span>
+      <input id="q" type="search" placeholder="행사명, 지역, 키워드를 검색해보세요!" aria-label="행사 검색">
+      <button type="submit">검색</button>
+    </form>
   </div>
 </header>
+
 <main class="wrap">
-  <div class="bar">
-    <input id="q" type="search" placeholder="🔍 행사명·장소 검색" aria-label="검색">
-    <select id="region" aria-label="지역"><option value="">전체 지역</option></select>
-    <div class="seg" id="period-seg" role="tablist">
-      <button data-v="upcoming" class="on">다가오는</button><button data-v="all">전체</button><button data-v="past">지난</button>
-    </div>
-    <input id="period" type="hidden" value="upcoming">
+  <div class="top-grid">
+    <section id="featured" class="featured" aria-label="추천 행사"></section>
+    <aside class="upnext">
+      <div class="panel-head"><h2>📅 다가오는 행사</h2><a href="#events">더보기 ›</a></div>
+      <ul id="upnext-list"></ul>
+    </aside>
   </div>
-  <p id="count" class="count"></p>
-  <div id="list" class="grid"></div><p id="empty" class="empty" hidden>조건에 맞는 행사가 없어요.</p>
+
+  <section class="cats" aria-label="카테고리">
+    <div class="panel-head"><h2>✦ 카테고리로 찾기</h2></div>
+    <div id="cat-list" class="cat-list"></div>
+  </section>
+
+  <section id="events" class="events-sec">
+    <div class="panel-head"><h2>모든 행사 <span id="count" class="count"></span></h2>
+      <button id="suggest-new" class="btn ghost">＋ 행사 제보하기</button></div>
+    <div class="bar">
+      <select id="region" aria-label="지역"><option value="">전체 지역</option></select>
+      <div class="seg" id="period-seg" role="tablist">
+        <button data-v="upcoming" class="on">다가오는</button><button data-v="all">전체</button><button data-v="past">지난</button>
+      </div>
+      <input id="period" type="hidden" value="upcoming">
+      <p id="meta" class="meta"></p>
+    </div>
+    <div id="list" class="grid"></div>
+    <div id="empty" class="empty" hidden><img src="/img/chibi-sad.webp" alt="" width="200" height="186"><p>조건에 맞는 행사가 없어요.</p><button class="btn ghost" id="reset">필터 초기화</button></div>
+  </section>
 </main>
+
+<footer class="foot">
+  <img src="/img/chibi-zzz.webp" alt="" width="170" loading="lazy">
+  <p><b>코스모아</b> · 행사 정보는 하루 한 번 갱신돼요. 정확한 내용은 꼭 공식 사이트에서 확인하세요.</p>
+</footer>
+
+<aside id="mascot" class="mascot" hidden>
+  <div class="bubble">코스모아와 함께<br>멋진 서브컬처 라이프를<br>시작하세요!</div>
+  <button id="mascot-x" class="mascot-x" aria-label="마스코트 닫기">✕</button>
+  <img src="/img/chibi-star.webp" alt="" width="150" loading="lazy">
+</aside>
 
 <dialog id="dlg">
   <div class="dlg-head"><h2 id="d-title"></h2><button id="d-close" class="x" aria-label="닫기">✕</button></div>

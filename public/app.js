@@ -93,16 +93,48 @@ function infoList(e, compact) {
   const rows = [['📅', fmtDate(e)], ['⏰', e.time], ['💰', e.fee], ['📍', e.location]].slice(compact ? 1 : 0);
   return h('dl', { class: 'info' }, rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', v ? {} : { class: 'na' }, v || '공식 사이트 확인')]));
 }
+const CATS = [['전체', '', '✨'], ['코스프레', '코스프레|코스', '👗'], ['게임', '게임', '🎮'], ['애니메이션', '애니', '🎬'], ['만화·웹툰', '만화|웹툰|코믹|일러', '📚'], ['서브컬처', '서브컬처', '💜'], ['굿즈·마켓', '굿즈|마켓', '🛍️'], ['대회·이벤트', '대회|이벤트|콘테스트', '🏆']];
+let cat = 0;
+const catMatch = (e, i) => !CATS[i][1] || new RegExp(CATS[i][1]).test((e.category || '') + ' ' + e.name);
+const upcoming = () => state.events.filter(e => e.endDate >= today());
+const pillCls = (d) => d === '진행중' ? 'live' : (d.startsWith('D-') && Number(d.slice(2)) <= 7 ? 'hot' : '');
+
+function renderTop() {
+  const ups = upcoming(), f = ups[0], box = $('#featured');
+  box.replaceChildren();
+  if (f) {
+    box.append(h('span', { class: 'stars', 'aria-hidden': 'true' }, '✦'),
+      h('span', { class: 'tag' }, (dday(f) === '진행중' ? '🔴 진행중' : '⭐ 추천 행사') + ' · ' + dday(f)),
+      h('h3', {}, f.name),
+      h('div', { class: 'fmeta' }, h('span', {}, '📅 ' + fmtDate(f)), f.location ? h('span', {}, '📍 ' + f.location) : null, f.fee ? h('span', {}, '💰 ' + f.fee) : null),
+      h('div', { class: 'actions' }, h('button', { class: 'btn light', onclick: () => openEvent(f.id) }, '참가 체크 · 문의'), h('a', { class: 'btn ghost', style: 'background:rgba(255,255,255,.2);color:#fff', href: officialHref(f), target: '_blank', rel: 'noopener noreferrer' }, f.officialUrl ? '공식 정보 ↗' : '공식 정보 검색 ↗')));
+  } else {
+    box.append(h('h3', {}, '곧 열리는 행사를 기다리고 있어요'), h('div', { class: 'fmeta' }, '행사 제보로 정보를 더해주세요!'));
+  }
+  const ul = $('#upnext-list'); ul.replaceChildren();
+  ups.slice(0, 4).forEach(e => {
+    const [, m, d] = e.startDate.split('-'), dd = dday(e);
+    ul.append(h('li', { onclick: () => openEvent(e.id) }, h('div', { class: 'un-d' }, h('b', {}, `${m}.${d}`), h('small', {}, e.endDate !== e.startDate ? '~' + e.endDate.slice(5).replace('-', '.') : '당일')),
+      h('div', { class: 'un-i' }, h('div', { class: 'un-t' }, e.name), h('div', { class: 'un-p' }, e.location || '장소 확인 필요')), h('span', { class: 'pill ' + pillCls(dd) }, dd)));
+  });
+  if (!ups.length) ul.append(h('li', { class: 'mute' }, '예정된 행사가 없어요'));
+  const cl = $('#cat-list'); cl.replaceChildren();
+  CATS.forEach(([name, , icon], i) => {
+    const n = state.events.filter(e => catMatch(e, i)).length;
+    cl.append(h('button', { class: 'cat' + (i === cat ? ' on' : ''), onclick: () => { cat = i; renderTop(); render(); $('#events').scrollIntoView({ behavior: 'smooth' }); } }, h('i', {}, icon), name, h('small', {}, n + '개')));
+  });
+}
+
 function render() {
   const q = $('#q').value.trim().toLowerCase(), region = $('#region').value, period = $('#period').value, t = today();
   const list = state.events.filter(e =>
     (!q || (e.name + ' ' + e.location).toLowerCase().includes(q)) &&
-    (!region || e.region === region) &&
+    (!region || e.region === region) && catMatch(e, cat) &&
     (period === 'all' || (period === 'upcoming' ? e.endDate >= t : e.endDate < t)));
   if (period === 'past') list.reverse();
   const box = $('#list'); box.replaceChildren();
   $('#empty').hidden = list.length > 0;
-  $('#count').textContent = list.length ? `행사 ${list.length}개` : '';
+  $('#count').textContent = list.length ? `${list.length}개` : '';
   for (const e of list) {
     const dd = dday(e), cls = dd === '종료' ? 'end' : dd === '진행중' ? 'live' : 'dday';
     box.append(h('article', { class: 'card' + (dd === '종료' ? ' past' : ''), tabindex: 0, onclick: () => openEvent(e.id), onkeydown: (k) => k.key === 'Enter' && openEvent(e.id) },
@@ -124,6 +156,7 @@ async function load() {
   sel.value = cur;
   const lr = j.meta && j.meta.lastRun;
   $('#meta').textContent = lr ? `행사 정보 마지막 자동 수집: ${new Date(lr).toLocaleString('ko-KR')} (하루 1회 갱신)` : '행사 정보 자동 수집 대기 중';
+  renderTop();
   render();
 }
 
@@ -144,6 +177,7 @@ async function renderDetail(e) {
   let filter = '전체';
 
   const form = h('section', {},
+    h('img', { class: 'sec-mascot', src: '/img/chibi-hi.webp', alt: '', width: 70 }),
     h('h4', {}, myServer ? '✅ 내 참가 정보 (수정 가능)' : '🙋 참가 체크'),
     h('div', { class: 'roles' }, state.roles.map(r => h('label', {}, h('input', { type: 'radio', name: 'role', value: r, checked: r === role, onchange: () => (role = r) }), h('span', {}, r)))),
     h('div', { class: 'row' }, h('input', { id: 'f-nick', maxlength: 20, placeholder: '닉네임 (필수)', value: (myServer && myServer.nickname) || pr.nickname })),
@@ -217,6 +251,16 @@ async function renderDetail(e) {
 $('#d-close').onclick = () => $('#dlg').close();
 $('#dlg').addEventListener('click', (ev) => { if (ev.target === $('#dlg')) $('#dlg').close(); });
 ['q', 'region'].forEach(id => $('#' + id).addEventListener('input', render));
+$('#hero-search').addEventListener('submit', (ev) => { ev.preventDefault(); render(); $('#events').scrollIntoView({ behavior: 'smooth' }); });
+$('#nav-suggest').addEventListener('click', (ev) => { ev.preventDefault(); openSuggest(null); });
+$('#reset').onclick = () => { $('#q').value = ''; $('#region').value = ''; cat = 0; $('#period').value = 'all'; document.querySelectorAll('#period-seg button').forEach(x => x.classList.toggle('on', x.dataset.v === 'all')); renderTop(); render(); };
+// 마스코트 말풍선 (닫으면 기억)
+try { if (!localStorage.getItem('cosmoa.mascotClosed')) $('#mascot').hidden = false; } catch { $('#mascot').hidden = false; }
+// 히어로를 지나 스크롤하면 나타나고, 말풍선은 몇 초 뒤 사라진다
+const mascot = $('#mascot'); mascot.classList.add('away');
+addEventListener('scroll', () => mascot.classList.toggle('away', scrollY < 520), { passive: true });
+setTimeout(() => { const b = mascot.querySelector('.bubble'); if (b) b.style.display = 'none'; }, 9000);
+$('#mascot-x').onclick = () => { $('#mascot').hidden = true; try { localStorage.setItem('cosmoa.mascotClosed', '1'); } catch {} };
 $('#period-seg').addEventListener('click', (ev) => {
   const b = ev.target.closest('button'); if (!b) return;
   $('#period').value = b.dataset.v;
