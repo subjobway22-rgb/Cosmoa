@@ -1,5 +1,20 @@
 [
   {
+    "id": "nekobimu-2026",
+    "name": "2026 네코비무 고양 서브컬처 페스티벌",
+    "category": "서브컬처",
+    "startDate": "2026-11-14",
+    "endDate": "2026-11-14",
+    "time": "11:00 ~ 21:00 (우천 시 11/15 순연)",
+    "fee": "무료",
+    "location": "경기 고양시 일산 라페스타 야외 보행거리 일대",
+    "region": "경기",
+    "officialUrl": "https://x.com/nekobimu_fes",
+    "links": [],
+    "description": "청년작가 60여 팀, 전문 코스어 NPC 스탬프 랠리, 애니송 버스킹, 코스프레 커버댄스, 나이트 DJ. 우천·강풍 시 15일(일) 순연 여부는 전날 18시 공식 X(@nekobimu_fes)에 공지됩니다. 고양신문 보도 기준 정보입니다.",
+    "source": "고양신문 보도"
+  },
+  {
     "id": "gstar-2026",
     "name": "지스타 2026 (G-STAR)",
     "category": "게임/서브컬처",
