@@ -1,0 +1,6 @@
+node_modules
+data/participants.json
+data/comments.json
+data/meta.json
+data/events.json
+*.tmp

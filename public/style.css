@@ -1,0 +1,50 @@
+:root{--bg:#f7f5ff;--card:#fff;--ink:#231f3a;--mute:#6b6785;--line:#e4e0f5;--pri:#7c4dff;--pri2:#ff5fa2;--chip:#efeaff}
+@media (prefers-color-scheme:dark){:root{--bg:#14121f;--card:#1d1a2e;--ink:#eeeaff;--mute:#a29fbd;--line:#322e4d;--chip:#2a2545}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+.top{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:24px 0 16px;margin-bottom:20px}
+.top h1{margin:0;font-size:28px}.top small{font-size:12px;opacity:.8;letter-spacing:.15em}
+.sub{margin:4px 0 14px;opacity:.95}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters input{flex:1;min-width:180px}
+input,select,textarea,button{font:inherit}
+input,select,textarea{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:100%}
+.filters input,.filters select{width:auto;border:0}
+.meta{font-size:12px;opacity:.9;margin:10px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding-bottom:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:.15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px #7c4dff22}
+.card h3{margin:0;font-size:17px}
+.tag{display:inline-block;background:var(--chip);color:var(--pri);border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600}
+.tag.sample{background:#fff3cd;color:#8a6d00}.tag.dday{background:var(--pri2);color:#fff}
+.info{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;font-size:14px;margin:0}
+.info dt{color:var(--mute)}.info dd{margin:0}
+.counts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.counts span{font-size:12px;background:var(--chip);border-radius:8px;padding:2px 8px}
+.btn{display:inline-block;border:0;border-radius:10px;padding:9px 14px;background:var(--pri);color:#fff;font-weight:600;cursor:pointer;text-decoration:none;text-align:center}
+.btn.ghost{background:var(--chip);color:var(--pri)}.btn.danger{background:#e5484d}
+.btn:disabled{opacity:.5}
+.empty{text-align:center;color:var(--mute);padding:40px}
+dialog{width:min(720px,96vw);max-height:92vh;border:0;border-radius:18px;padding:0;background:var(--bg);color:var(--ink);overflow:auto}
+dialog::backdrop{background:#0008}
+.dlg-head{position:sticky;top:0;background:var(--bg);display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);z-index:1}
+.dlg-head h2{margin:0;font-size:19px}.x{border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer}
+#d-body{padding:16px 18px 24px;display:flex;flex-direction:column;gap:18px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+section h4{margin:0 0 10px;font-size:15px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.roles{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.roles label{cursor:pointer}.roles input{display:none}
+.roles span{display:inline-block;padding:7px 14px;border-radius:99px;background:var(--chip);color:var(--pri);font-weight:600}
+.roles input:checked+span{background:var(--pri);color:#fff}
+.row{display:flex;gap:8px;margin-bottom:8px}.row>*{flex:1}.row select{flex:0 0 120px}
+.plist,.clist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.plist li,.clist li{border-top:1px solid var(--line);padding-top:8px;font-size:14px}
+.plist li:first-child,.clist li:first-child{border:0;padding-top:0}
+.who{font-weight:700}.mute{color:var(--mute);font-size:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button{border:0;border-radius:99px;padding:4px 12px;background:var(--chip);color:var(--ink);cursor:pointer}
+.tabs button.on{background:var(--pri);color:#fff}
+.chk{display:flex;gap:6px;align-items:center;margin:6px 0;font-size:14px}.chk input{width:auto}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#231f3a;color:#fff;padding:10px 18px;border-radius:99px;z-index:99}

@@ -1,0 +1,9 @@
+{
+  "name": "cosmoa",
+  "version": "1.0.0",
+  "description": "코스모아 - 코스프레/서브컬처 행사 정보 & 참가 체크 서비스",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "refresh": "node -e \"require('./lib/scraper').run().then(r=>console.log(r))\"", "test": "node test.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
